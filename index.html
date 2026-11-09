@@ -74,6 +74,50 @@
   .feed{display:flex;gap:6px;margin-top:4px}
   .feed input{font-size:12px}
   .small{font-size:12px;color:var(--muted);margin-top:6px;line-height:1.5}
+  .tabs.sm button{padding:5px 0;font-size:12px}
+  .tabs[hidden],.nav[hidden]{display:none}
+  .nav{display:flex;align-items:center;gap:6px;margin:4px 0 10px}
+  .nav .navt{flex:1;font-weight:700;font-size:15px}
+  .nav button{background:var(--card);border:1px solid var(--line);border-radius:9px;padding:6px 11px;font-weight:600;font-size:13px}
+  /* week */
+  .wk{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--card);touch-action:pan-y}
+  .wk-head,.wk-all{display:grid;grid-template-columns:34px repeat(7,minmax(0,1fr));border-bottom:1px solid var(--line)}
+  .wk-head div{text-align:center;padding:6px 0 5px;font-size:11px;color:var(--muted);line-height:1.2}
+  .wk-head div b{display:block;font-size:15px;color:var(--text)}
+  .wk-head div.td b{background:var(--accent);color:#fff;border-radius:999px;width:26px;height:26px;line-height:26px;margin:2px auto 0}
+  .wk-all>div{padding:2px 1px;min-height:6px;border-left:1px solid var(--line);display:flex;flex-direction:column;gap:2px}
+  .wk-all>div:first-child{border-left:0;font-size:9.5px;color:var(--muted);padding:4px 2px}
+  .ad{font-size:10.5px;line-height:1.25;border-radius:4px;padding:2px 3px;background:color-mix(in srgb,var(--c) 26%,transparent);overflow:hidden;white-space:nowrap;text-overflow:ellipsis;cursor:pointer}
+  .wk-body{position:relative;display:grid;grid-template-columns:34px repeat(7,minmax(0,1fr))}
+  .wk-hours div{font-size:9.5px;color:var(--muted);text-align:right;padding-right:4px;transform:translateY(-6px)}
+  .wk-col{position:relative;border-left:1px solid var(--line)}
+  .wk-col.td{background:color-mix(in srgb,var(--accent) 5%,transparent)}
+  .hl{position:absolute;left:0;right:0;border-top:1px solid color-mix(in srgb,var(--line) 70%,transparent)}
+  .blk{position:absolute;border-radius:5px;padding:2px 3px;font-size:10.5px;line-height:1.2;overflow:hidden;background:color-mix(in srgb,var(--c) 30%,var(--card));border-left:3px solid var(--c);cursor:pointer;color:var(--text)}
+  .blk small{display:block;color:var(--muted);font-size:9.5px}
+  .blk.cx{opacity:.5;text-decoration:line-through}
+  .gblk{position:absolute;right:1px;width:15px;font-size:10px;text-align:center;opacity:.55;cursor:pointer;border-radius:4px;border:1px dashed var(--line)}
+  .nowl{position:absolute;left:0;right:0;border-top:2px solid var(--accent);z-index:3}
+  .nowl::before{content:"";position:absolute;left:-4px;top:-5px;width:8px;height:8px;border-radius:50%;background:var(--accent)}
+  /* month */
+  .mo{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--card);touch-action:pan-y}
+  .mo-head,.mo-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr))}
+  .mo-head div{text-align:center;font-size:11px;color:var(--muted);padding:6px 0;border-bottom:1px solid var(--line)}
+  .mc{min-height:74px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:3px 2px;cursor:pointer;overflow:hidden}
+  .mc:nth-child(7n){border-right:0}
+  .mc.out{opacity:.4}
+  .mc.sel{background:color-mix(in srgb,var(--accent) 10%,transparent)}
+  .mc .dn{font-size:11.5px;font-weight:600;margin:0 0 2px 2px}
+  .mc.td .dn{color:#fff;background:var(--accent);border-radius:999px;display:inline-block;min-width:20px;text-align:center;margin-left:0;padding:0 4px}
+  .me{font-size:9.5px;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border-left:2px solid var(--c);padding-left:2px;margin-bottom:1px}
+  .me.cx{text-decoration:line-through;opacity:.5}
+  .mm{font-size:9.5px;color:var(--muted);padding-left:2px}
+  .seltitle{margin-top:16px}
+  /* sheet */
+  .sheet{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:flex-end;justify-content:center;z-index:20}
+  .sheet[hidden]{display:none}
+  .sheet-in{background:var(--bg);width:100%;max-width:680px;border-radius:16px 16px 0 0;padding:16px 16px calc(20px + env(safe-area-inset-bottom));max-height:80vh;overflow:auto}
+  .sheet-in .day{margin-top:0}
   .games{margin:2px 0 8px;font-size:13px;color:var(--muted)}
   .games summary{cursor:pointer;list-style:none;padding:4px 2px}
   .games summary::-webkit-details-marker{display:none}
@@ -125,11 +169,22 @@
 
   <div id="error" class="err" hidden></div>
 
-  <div class="tabs" id="tabs">
+  <div class="tabs" id="views">
+    <button data-v="list">List</button>
+    <button data-v="week">Week</button>
+    <button data-v="month">Month</button>
+  </div>
+  <div class="tabs sm" id="tabs">
     <button data-r="today">Today</button>
     <button data-r="week">7 days</button>
     <button data-r="month">30 days</button>
     <button data-r="all">All</button>
+  </div>
+  <div class="nav" id="nav" hidden>
+    <button id="prevBtn" aria-label="Previous">‹</button>
+    <div class="navt" id="navTitle"></div>
+    <button id="todayBtn">Today</button>
+    <button id="nextBtn" aria-label="Next">›</button>
   </div>
   <div class="srcs" id="srcs"></div>
   <label class="toggle"><input type="checkbox" id="showCx"> Show cancelled</label>
@@ -138,6 +193,7 @@
 
   <div class="foot" id="foot"></div>
 </div>
+<div class="sheet" id="sheet" hidden><div class="sheet-in" id="sheetIn"></div></div>
 
 <script>
 const DEFAULT_API = "https://email-campaign-server-9a1eb5eb4201.herokuapp.com/cal";
@@ -168,8 +224,7 @@ async function fetchAll(force) {
   $("refreshBtn").disabled = true;
   try {
     const status = force ? await api("/api/refresh", { method: "POST" }) : await api("/api/status");
-    const from = new Date(); from.setHours(0, 0, 0, 0); from.setDate(from.getDate() - 1);
-    const { events } = await api("/api/events?from=" + encodeURIComponent(from.toISOString()));
+    const { events } = await api("/api/events");
     data = { status, events, fetchedAt: new Date().toISOString() };
     save("mycal.cache", data);
     showError("");
@@ -212,8 +267,16 @@ function sourceColors() {
   return map;
 }
 
+let anchor = new Date(); // week/month being shown
+let selDay = null;        // month view: selected day key
+let shown = [];           // events on screen, for tap-to-open
+
 function render() {
+  prefs.view = prefs.view || "list";
+  for (const b of $("views").children) b.classList.toggle("on", b.dataset.v === prefs.view);
   for (const b of $("tabs").children) b.classList.toggle("on", b.dataset.r === prefs.range);
+  $("tabs").hidden = prefs.view !== "list";
+  $("nav").hidden = prefs.view === "list";
   $("showCx").checked = prefs.showCx;
 
   if (!data) { $("list").innerHTML = `<div class="empty">${cfg.token ? "Loading…" : "Not connected yet."}</div>`; $("sub").textContent = ""; return; }
@@ -232,11 +295,20 @@ function render() {
   const days = { today: 1, week: 7, month: 30, all: 10000 }[prefs.range];
   const rangeEnd = new Date(today); rangeEnd.setDate(rangeEnd.getDate() + days);
 
-  const visible = data.events.filter((e) => {
+  const filtered = data.events.filter((e) => {
     if (e.status === "cancelled" && !prefs.showCx) return false;
-    if (e.sources.every((s) => prefs.hidden.includes(s))) return false;
-    return endOf(e) > today && startOf(e) < rangeEnd;
+    return !e.sources.every((s) => prefs.hidden.includes(s));
   });
+  shown = filtered;
+
+  if (prefs.view === "week") renderWeek(filtered, now, colors);
+  else if (prefs.view === "month") renderMonth(filtered, now, colors);
+  else renderList(filtered.filter((e) => endOf(e) > today && startOf(e) < rangeEnd), now, today, colors);
+
+  renderStatus(sources, now);
+}
+
+function renderList(visible, now, today, colors) {
 
   const groups = new Map();
   for (const e of visible) {
@@ -259,7 +331,9 @@ function render() {
   }
   if (!visible.length && prefs.range === "all") html = `<div class="empty">No upcoming events.</div>`;
   $("list").innerHTML = html;
+}
 
+function renderStatus(sources, now) {
   const stale = sources.some((s) => (s.kind === "email" ? s.configured && !s.ok : !s.ok));
   const next = data.events.find((e) => e.status !== "cancelled" && !e.allDay && e.category !== "game" && startOf(e) > now && !e.sources.every((s) => prefs.hidden.includes(s)));
   $("sub").className = "sub" + (stale ? " stale" : "");
@@ -277,6 +351,168 @@ function render() {
     $("feedUrl").value = apiBase().replace(/^https?:/, "webcal:") + "/" + data.status.feedPath;
   }
 }
+
+// ---------- week + month
+const addD = (d, n) => { const x = new Date(d); x.setDate(x.getDate() + n); return x; };
+const startOfWeek = (d) => { const x = new Date(d); x.setHours(0, 0, 0, 0); x.setDate(x.getDate() - x.getDay()); return x; };
+const overlaps = (e, from, to) => startOf(e) < to && endOf(e) > from;
+const colorOf = (e, colors) => colors[e.sources[0]] || "var(--muted)";
+
+function renderWeek(evs, now, colors) {
+  const start = startOfWeek(anchor);
+  const days = [...Array(7)].map((_, i) => addD(start, i));
+  const end = addD(start, 7);
+  const last = addD(end, -1);
+  $("navTitle").textContent = start.getMonth() === last.getMonth()
+    ? `${start.toLocaleDateString([], { month: "short" })} ${start.getDate()}–${last.getDate()}`
+    : `${start.toLocaleDateString([], { month: "short", day: "numeric" })} – ${last.toLocaleDateString([], { month: "short", day: "numeric" })}`;
+
+  const week = evs.filter((e) => overlaps(e, start, end));
+  const timed = week.filter((e) => !e.allDay && e.category !== "game");
+  const games = week.filter((e) => e.category === "game");
+  const allDay = week.filter((e) => e.allDay);
+
+  // Hours shown: 7 AM–10 PM, stretched to fit anything outside that.
+  let minH = 7, maxH = 22;
+  for (const e of timed) {
+    const s = startOf(e), en = endOf(e);
+    if (s >= start) minH = Math.min(minH, s.getHours());
+    if (en < end && dayKey(en) === dayKey(s)) maxH = Math.max(maxH, en.getHours() + (en.getMinutes() ? 1 : 0));
+  }
+  for (const g of games) { const s = startOf(g); if (s >= start) maxH = Math.max(maxH, s.getHours() + 1); }
+  minH = Math.max(0, minH); maxH = Math.min(24, Math.max(maxH, minH + 1));
+  const HPX = 44, height = (maxH - minH) * HPX;
+  const y = (d, day) => Math.max(0, Math.min(height, ((d - day) / 3600000 - minH) * HPX));
+
+  const todayK = dayKey(now);
+  let html = `<div class="wk" id="swipe"><div class="wk-head"><div></div>${days.map((d) =>
+    `<div class="${dayKey(d) === todayK ? "td" : ""}">${d.toLocaleDateString([], { weekday: "short" })}<b>${d.getDate()}</b></div>`).join("")}</div>`;
+
+  if (allDay.length) {
+    html += `<div class="wk-all"><div>all-day</div>${days.map((d) => {
+      const n = addD(d, 1);
+      return `<div>${allDay.filter((e) => overlaps(e, d, n)).map((e) =>
+        `<div class="ad" data-i="${shown.indexOf(e)}" style="--c:${esc(colorOf(e, colors))}">${esc(e.title)}</div>`).join("")}</div>`;
+    }).join("")}</div>`;
+  }
+
+  html += `<div class="wk-body" style="height:${height}px"><div class="wk-hours">${[...Array(maxH - minH)].map((_, i) => {
+    const h = minH + i;
+    return `<div style="height:${HPX}px">${i ? (h % 12 || 12) + (h < 12 ? "a" : "p") : ""}</div>`;
+  }).join("")}</div>`;
+
+  for (const d of days) {
+    const n = addD(d, 1);
+    const isToday = dayKey(d) === todayK;
+    const list = timed.filter((e) => overlaps(e, d, n)).sort((a, b) => startOf(a) - startOf(b) || endOf(b) - endOf(a));
+    // Side-by-side lanes for overlapping events.
+    const placed = [];
+    let cluster = [], clusterEnd = 0;
+    const flush = () => { const lanes = Math.max(...cluster.map((p) => p.lane)) + 1; cluster.forEach((p) => (p.lanes = lanes)); cluster = []; };
+    for (const e of list) {
+      const s = Math.max(startOf(e), d), en = Math.min(endOf(e), n);
+      if (cluster.length && s >= clusterEnd) flush();
+      const used = new Set(cluster.filter((p) => p.end > s).map((p) => p.lane));
+      let lane = 0; while (used.has(lane)) lane++;
+      const p = { e, s, end: en, lane };
+      cluster.push(p); placed.push(p);
+      clusterEnd = Math.max(clusterEnd, en);
+    }
+    if (cluster.length) flush();
+
+    html += `<div class="wk-col ${isToday ? "td" : ""}">`;
+    for (let i = 1; i < maxH - minH; i++) html += `<div class="hl" style="top:${i * HPX}px"></div>`;
+    for (const p of placed) {
+      const top = y(p.s, d), h = Math.max(16, y(p.end, d) - top - 1);
+      const w = 100 / p.lanes;
+      html += `<div class="blk ${p.e.status === "cancelled" ? "cx" : ""}" data-i="${shown.indexOf(p.e)}" style="--c:${esc(colorOf(p.e, colors))};top:${top}px;height:${h}px;left:calc(${p.lane * w}% + 1px);width:calc(${w}% - 2px)">${esc(p.e.title)}${h > 30 ? `<small>${fmtTime(startOf(p.e))}</small>` : ""}</div>`;
+    }
+    for (const g of games.filter((e) => dayKey(startOf(e)) === dayKey(d))) {
+      html += `<div class="gblk" data-i="${shown.indexOf(g)}" style="top:${y(startOf(g), d)}px" title="${esc(g.title)}">${[...g.title][0]}</div>`;
+    }
+    if (isToday) {
+      const ny = y(now, d);
+      if (ny > 0 && ny < height) html += `<div class="nowl" style="top:${ny}px"></div>`;
+    }
+    html += `</div>`;
+  }
+  html += `</div></div>`;
+  $("list").innerHTML = html;
+}
+
+function renderMonth(evs, now, colors) {
+  const first = new Date(anchor.getFullYear(), anchor.getMonth(), 1);
+  $("navTitle").textContent = first.toLocaleDateString([], { month: "long", year: "numeric" });
+  const gridStart = startOfWeek(first);
+  const todayK = dayKey(now);
+  if (!selDay || parseDay(selDay).getMonth() !== first.getMonth()) {
+    selDay = now.getMonth() === first.getMonth() && now.getFullYear() === first.getFullYear() ? todayK : dayKey(first);
+  }
+  let html = `<div class="mo" id="swipe"><div class="mo-head">${[...Array(7)].map((_, i) =>
+    `<div>${addD(gridStart, i).toLocaleDateString([], { weekday: "narrow" })}</div>`).join("")}</div><div class="mo-grid">`;
+  for (let i = 0; i < 42; i++) {
+    const d = addD(gridStart, i), n = addD(d, 1), k = dayKey(d);
+    if (i === 35 && d.getMonth() !== first.getMonth()) break; // 5-week months
+    const dayEv = evs.filter((e) => overlaps(e, d, n));
+    const real = dayEv.filter((e) => e.category !== "game").sort((a, b) => (b.allDay - a.allDay) || startOf(a) - startOf(b));
+    const games = dayEv.filter((e) => e.category === "game");
+    const shownHere = real.slice(0, 3);
+    html += `<div class="mc ${d.getMonth() !== first.getMonth() ? "out" : ""} ${k === todayK ? "td" : ""} ${k === selDay ? "sel" : ""}" data-d="${k}">
+      <div class="dn">${d.getDate()}</div>
+      ${shownHere.map((e) => `<div class="me ${e.status === "cancelled" ? "cx" : ""}" style="--c:${esc(colorOf(e, colors))}">${esc(e.title)}</div>`).join("")}
+      ${real.length > 3 ? `<div class="mm">+${real.length - 3} more</div>` : ""}
+      ${games.length ? `<div class="mm">${[...new Set(games.map((g) => [...g.title][0]))].join("")}${games.length > 1 ? games.length : ""}</div>` : ""}
+    </div>`;
+  }
+  html += `</div></div>`;
+
+  // The selected day's details, same cards as the list.
+  const d = parseDay(selDay), n = addD(d, 1);
+  const dayEv = evs.filter((e) => overlaps(e, d, n)).sort((a, b) => (b.allDay - a.allDay) || startOf(a) - startOf(b));
+  const real = dayEv.filter((e) => e.category !== "game");
+  const games = dayEv.filter((e) => e.category === "game");
+  html += `<div class="day seltitle ${selDay === todayK ? "today" : ""}">${esc(dayLabel(selDay))}</div>`;
+  html += real.map((e) => card(e, now, colors)).join("") || (games.length ? "" : `<div class="empty">Nothing on this day.</div>`);
+  if (games.length) html += gamesBlock(games, now);
+  $("list").innerHTML = html;
+}
+
+function openSheet(e) {
+  const colors = sourceColors();
+  const k = dayKey(startOf(e));
+  $("sheetIn").innerHTML = `<div class="day">${esc(dayLabel(k))}</div>` + (e.category === "game" ? gamesBlock([e], new Date()) : card(e, new Date(), colors));
+  $("sheet").hidden = false;
+}
+$("sheet").onclick = (ev) => { if (ev.target.id === "sheet") $("sheet").hidden = true; };
+
+$("list").addEventListener("click", (ev) => {
+  const blk = ev.target.closest("[data-i]");
+  if (blk && prefs.view === "week") { const e = shown[+blk.dataset.i]; if (e) openSheet(e); return; }
+  const cell = ev.target.closest(".mc");
+  if (cell) { selDay = cell.dataset.d; const d = parseDay(selDay); if (d.getMonth() !== anchor.getMonth()) anchor = d; render(); }
+});
+
+function shift(dir) {
+  if (prefs.view === "week") anchor = addD(anchor, 7 * dir);
+  else { anchor = new Date(anchor.getFullYear(), anchor.getMonth() + dir, 1); selDay = null; }
+  render();
+}
+$("prevBtn").onclick = () => shift(-1);
+$("nextBtn").onclick = () => shift(1);
+$("todayBtn").onclick = () => { anchor = new Date(); selDay = null; render(); };
+$("views").onclick = (ev) => {
+  const v = ev.target.dataset?.v; if (!v) return;
+  prefs.view = v; save("mycal.prefs", prefs); anchor = new Date(); selDay = null; render();
+};
+// Swipe left/right on the week or month grid.
+let touchX = null, touchY = null;
+$("list").addEventListener("touchstart", (ev) => { if (ev.target.closest("#swipe")) { touchX = ev.touches[0].clientX; touchY = ev.touches[0].clientY; } }, { passive: true });
+$("list").addEventListener("touchend", (ev) => {
+  if (touchX == null) return;
+  const dx = ev.changedTouches[0].clientX - touchX, dy = ev.changedTouches[0].clientY - touchY;
+  touchX = null;
+  if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) shift(dx < 0 ? 1 : -1);
+}, { passive: true });
 
 // Games stay out of the way: slim muted lines after the day's events,
 // folded into one line when there are three or more.
