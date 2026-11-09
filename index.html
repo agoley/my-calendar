@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>My Calendar</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0f1115">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="My Calendar">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0f1115; --card:#181b22; --line:#262a33; --text:#eef0f4; --muted:#8b92a1;
+    --accent:#e11d48; --ok:#3ecf8e; --warn:#f59e0b; --chip:#22262f;
+  }
+  @media (prefers-color-scheme: light){
+    :root{ --bg:#f6f6f4; --card:#fff; --line:#e6e6e2; --text:#16181d; --muted:#6b7280; --chip:#f0f0ec; }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font:15px/1.4 Inter,system-ui,sans-serif}
+  .wrap{max-width:680px;margin:0 auto;padding:calc(20px + env(safe-area-inset-top)) calc(16px + env(safe-area-inset-right)) calc(48px + env(safe-area-inset-bottom)) calc(16px + env(safe-area-inset-left))}
+  header{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:14px}
+  h1{font-size:24px;margin:0;letter-spacing:-.02em}
+  .sub{color:var(--muted);font-size:13px;margin-top:2px}
+  .sub.stale{color:var(--warn)}
+  button{font:inherit;color:inherit;cursor:pointer}
+  .btns{display:flex;gap:6px}
+  .gear{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 12px;font-weight:600;font-size:13px;white-space:nowrap}
+  .gear:disabled{opacity:.5}
+  .panel{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:16px}
+  .panel h2{font-size:15px;margin:0 0 10px}
+  label.f{display:block;font-size:12.5px;color:var(--muted);margin:10px 0 4px}
+  input[type=text],input[type=password],input[type=url]{width:100%;font:inherit;color:var(--text);background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:9px 10px}
+  .done{margin-top:14px;width:100%;background:var(--accent);color:#fff;border:0;border-radius:10px;padding:10px;font-weight:600}
+  .tabs{display:flex;gap:6px;margin-bottom:10px}
+  .tabs button{flex:1;background:var(--chip);border:1px solid var(--line);border-radius:999px;padding:7px 0;font-size:13px;font-weight:600;color:var(--muted)}
+  .tabs button.on{background:var(--text);color:var(--bg);border-color:var(--text)}
+  .srcs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px}
+  .src{display:flex;align-items:center;gap:6px;background:var(--chip);border:1px solid var(--line);border-radius:999px;padding:4px 10px 4px 8px;font-size:12.5px;font-weight:600}
+  .src.off{opacity:.4;text-decoration:line-through}
+  .src .warn{color:var(--warn)}
+  .dot{width:9px;height:9px;border-radius:50%;flex:none;display:inline-block}
+  .toggle{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--muted);margin:6px 2px 0}
+  .toggle input{accent-color:var(--accent)}
+  .day{font-weight:700;font-size:13px;margin:20px 0 8px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .day.today{color:var(--accent)}
+  .ev{display:flex;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:11px 14px;margin-bottom:8px;position:relative;overflow:hidden}
+  .ev::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--c,var(--muted))}
+  .ev.cx{opacity:.55}
+  .ev.cx .t{text-decoration:line-through}
+  .ev.now{border-color:var(--accent);box-shadow:0 4px 18px color-mix(in srgb,var(--accent) 22%,transparent)}
+  .ev.past{opacity:.5}
+  .time{flex:none;width:68px;font-weight:700;font-variant-numeric:tabular-nums;font-size:14px}
+  .time small{display:block;font-weight:500;color:var(--muted);font-size:11.5px}
+  .body{min-width:0;flex:1}
+  .t{font-weight:600;overflow-wrap:anywhere}
+  .meta{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:5px;color:var(--muted);font-size:12.5px}
+  .loc{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
+  .chip{background:var(--chip);border-radius:6px;padding:2px 7px;font-size:12px;color:var(--muted)}
+  .chip.cx{background:color-mix(in srgb,var(--accent) 18%,transparent);color:var(--accent);font-weight:700}
+  .chip.nowc{background:var(--accent);color:#fff;font-weight:700}
+  a.join{background:color-mix(in srgb,var(--ok) 18%,transparent);color:var(--ok);font-weight:700;border-radius:6px;padding:2px 8px;font-size:12px;text-decoration:none}
+  .dots{display:inline-flex;gap:3px}
+  .empty{color:var(--muted);text-align:center;padding:30px 10px}
+  .err{background:color-mix(in srgb,var(--warn) 16%,transparent);border-radius:10px;padding:10px 12px;font-size:13px;margin-bottom:12px}
+  .foot{color:var(--muted);font-size:12px;margin-top:26px;line-height:1.6}
+  .foot b{color:var(--text);font-weight:600}
+  .feed{display:flex;gap:6px;margin-top:4px}
+  .feed input{font-size:12px}
+  .small{font-size:12px;color:var(--muted);margin-top:6px;line-height:1.5}
+  details.desc{margin-top:6px;font-size:12.5px;color:var(--muted)}
+  details.desc summary{cursor:pointer}
+  details.desc div{white-space:pre-wrap;overflow-wrap:anywhere;margin-top:4px;max-height:220px;overflow:auto}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>My Calendar</h1>
+      <div class="sub" id="sub">Loading…</div>
+    </div>
+    <div class="btns">
+      <button class="gear" id="refreshBtn" title="Fetch every calendar now">↻</button>
+      <button class="gear" id="gearBtn">Settings</button>
+    </div>
+  </header>
+
+  <div class="panel" id="settings" hidden>
+    <h2>Connection</h2>
+    <label class="f" for="api">Server URL</label>
+    <input type="url" id="api" autocomplete="off" spellcheck="false">
+    <label class="f" for="token">Access token (CAL_TOKEN)</label>
+    <input type="password" id="token" autocomplete="off" spellcheck="false">
+    <div id="feedBox" hidden>
+      <label class="f">Subscribe from another calendar app</label>
+      <div class="feed"><input type="text" id="feedUrl" readonly><button class="gear" id="copyFeed">Copy</button></div>
+      <div class="small">Apple Calendar lets you set this to refresh every 5 minutes. Google and Outlook only re-read subscribed calendars every few hours, so use this app when you need it to be current.</div>
+    </div>
+    <button class="done" id="saveBtn">Save</button>
+  </div>
+
+  <div id="error" class="err" hidden></div>
+
+  <div class="tabs" id="tabs">
+    <button data-r="today">Today</button>
+    <button data-r="week">7 days</button>
+    <button data-r="month">30 days</button>
+    <button data-r="all">All</button>
+  </div>
+  <div class="srcs" id="srcs"></div>
+  <label class="toggle"><input type="checkbox" id="showCx"> Show cancelled</label>
+
+  <div id="list"></div>
+
+  <div class="foot" id="foot"></div>
+</div>
+
+<script>
+const DEFAULT_API = "https://email-campaign-server-9a1eb5eb4201.herokuapp.com/cal";
+const $ = (id) => document.getElementById(id);
+const load = (k, d) => { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch { return d; } };
+const save = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} };
+
+let cfg = load("mycal.cfg", { api: DEFAULT_API, token: "" });
+let prefs = load("mycal.prefs", { range: "week", hidden: [], showCx: false });
+let data = load("mycal.cache", null); // { status, events, fetchedAt }
+let busy = false;
+
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const apiBase = () => cfg.api.replace(/\/+$/, "");
+
+async function api(path, opts = {}) {
+  const res = await fetch(apiBase() + path, { ...opts, headers: { Authorization: "Bearer " + cfg.token, ...(opts.headers || {}) }, cache: "no-store" });
+  if (res.status === 401) throw new Error("The server rejected the token. Check it in Settings.");
+  if (res.status === 503) throw new Error("Calendar sync isn't configured on the server yet (CAL_TOKEN unset).");
+  if (!res.ok) throw new Error(`Server error ${res.status}`);
+  return res.json();
+}
+
+async function fetchAll(force) {
+  if (!cfg.token) { openSettings(); showError("Add your server URL and token to get started."); return; }
+  if (busy) return;
+  busy = true;
+  $("refreshBtn").disabled = true;
+  try {
+    const status = force ? await api("/api/refresh", { method: "POST" }) : await api("/api/status");
+    const from = new Date(); from.setHours(0, 0, 0, 0); from.setDate(from.getDate() - 1);
+    const { events } = await api("/api/events?from=" + encodeURIComponent(from.toISOString()));
+    data = { status, events, fetchedAt: new Date().toISOString() };
+    save("mycal.cache", data);
+    showError("");
+  } catch (err) {
+    showError((navigator.onLine ? "" : "You're offline. ") + (err.message || "Couldn't reach the server.") + (data ? " Showing the last copy." : ""));
+  } finally {
+    busy = false;
+    $("refreshBtn").disabled = false;
+    render();
+  }
+}
+
+function showError(msg) { $("error").hidden = !msg; $("error").textContent = msg; }
+
+// ---------- dates
+const dayKey = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+const parseDay = (s) => { const [y, m, d] = s.split("-").map(Number); return new Date(y, m - 1, d); };
+const fmtTime = (d) => d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+function startOf(e) { return e.allDay ? parseDay(e.start) : new Date(e.start); }
+function endOf(e) { return e.allDay ? parseDay(e.end) : new Date(e.end); }
+function dayLabel(key) {
+  const d = parseDay(key), t = new Date(); t.setHours(0, 0, 0, 0);
+  const diff = Math.round((d - t) / 86400000);
+  const base = d.toLocaleDateString([], { weekday: "long", month: "short", day: "numeric" });
+  return diff === 0 ? "Today · " + base : diff === 1 ? "Tomorrow · " + base : diff === -1 ? "Yesterday · " + base : base;
+}
+function ago(iso) {
+  if (!iso) return "never";
+  const s = Math.round((Date.now() - Date.parse(iso)) / 1000);
+  if (s < 60) return "just now";
+  if (s < 3600) return Math.round(s / 60) + " min ago";
+  if (s < 86400) return Math.round(s / 3600) + " h ago";
+  return Math.round(s / 86400) + " d ago";
+}
+
+// ---------- render
+function sourceColors() {
+  const map = {};
+  for (const s of data?.status?.sources || []) map[s.name] = s.color;
+  return map;
+}
+
+function render() {
+  for (const b of $("tabs").children) b.classList.toggle("on", b.dataset.r === prefs.range);
+  $("showCx").checked = prefs.showCx;
+
+  if (!data) { $("list").innerHTML = `<div class="empty">${cfg.token ? "Loading…" : "Not connected yet."}</div>`; $("sub").textContent = ""; return; }
+
+  const colors = sourceColors();
+  const sources = data.status?.sources || [];
+  $("srcs").innerHTML = sources.map((s) => {
+    const off = prefs.hidden.includes(s.name);
+    const bad = s.kind === "feed" ? !s.ok : s.configured && !s.ok;
+    const title = bad ? (s.lastError || "Not synced yet") : "Synced " + ago(s.lastOk);
+    return `<button class="src ${off ? "off" : ""}" data-s="${esc(s.name)}" title="${esc(title)}"><span class="dot" style="background:${esc(s.color)}"></span>${esc(s.name)}${bad ? ' <span class="warn">⚠</span>' : ""}</button>`;
+  }).join("");
+
+  const now = new Date();
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const days = { today: 1, week: 7, month: 30, all: 10000 }[prefs.range];
+  const rangeEnd = new Date(today); rangeEnd.setDate(rangeEnd.getDate() + days);
+
+  const visible = data.events.filter((e) => {
+    if (e.status === "cancelled" && !prefs.showCx) return false;
+    if (e.sources.every((s) => prefs.hidden.includes(s))) return false;
+    return endOf(e) > today && startOf(e) < rangeEnd;
+  });
+
+  const groups = new Map();
+  for (const e of visible) {
+    const s = startOf(e);
+    const key = dayKey(s < today ? today : s);
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(e);
+  }
+  for (const list of groups.values()) list.sort((a, b) => (b.allDay - a.allDay) || (startOf(a) - startOf(b)));
+
+  let html = "";
+  const todayKey = dayKey(today);
+  if (!groups.has(todayKey) && prefs.range !== "all") html += `<div class="day today">${esc(dayLabel(todayKey))}</div><div class="empty">Nothing else today.</div>`;
+  for (const key of [...groups.keys()].sort()) {
+    html += `<div class="day ${key === todayKey ? "today" : ""}">${esc(dayLabel(key))}</div>`;
+    for (const e of groups.get(key)) html += card(e, now, colors);
+  }
+  if (!visible.length && prefs.range === "all") html = `<div class="empty">No upcoming events.</div>`;
+  $("list").innerHTML = html;
+
+  const stale = sources.some((s) => (s.kind === "feed" ? !s.ok : s.configured && !s.ok));
+  const next = data.events.find((e) => e.status !== "cancelled" && !e.allDay && startOf(e) > now && !e.sources.every((s) => prefs.hidden.includes(s)));
+  $("sub").className = "sub" + (stale ? " stale" : "");
+  $("sub").textContent = `Updated ${ago(data.fetchedAt)}` + (stale ? " · a calendar isn't syncing" : "") + (next ? ` · next: ${next.title} at ${fmtTime(startOf(next))}` : "");
+
+  $("foot").innerHTML = sources.map((s) => {
+    const state = s.kind === "email" && !s.configured
+      ? "mailbox not connected"
+      : s.lastError ? "error: " + s.lastError.replace(/^\S+\s/, "") : s.lastOk ? "synced " + ago(s.lastOk) : "waiting for first sync";
+    return `<div><span class="dot" style="background:${esc(s.color)}"></span> <b>${esc(s.name)}</b> — ${esc(state)}${s.kind === "email" && s.storedInvites != null ? ` (${s.storedInvites} invites tracked)` : ""}</div>`;
+  }).join("") + (data.status?.generatedAt ? `<div>Server merged ${ago(data.status.generatedAt)}.</div>` : "");
+
+  if (data.status?.feedPath) {
+    $("feedBox").hidden = false;
+    $("feedUrl").value = apiBase().replace(/^https?:/, "webcal:") + "/" + data.status.feedPath;
+  }
+}
+
+function card(e, now, colors) {
+  const s = startOf(e), en = endOf(e);
+  const cx = e.status === "cancelled";
+  const isNow = !cx && !e.allDay && s <= now && en > now;
+  const past = !cx && !e.allDay && en <= now;
+  let time;
+  if (e.allDay) {
+    const daysLong = Math.round((en - s) / 86400000);
+    const last = new Date(en); last.setDate(last.getDate() - 1);
+    time = `All day${daysLong > 1 ? `<small>to ${last.toLocaleDateString([], { month: "short", day: "numeric" })}</small>` : ""}`;
+  } else {
+    const mins = Math.round((en - s) / 60000);
+    const dur = mins < 60 ? mins + "m" : (mins % 60 ? (mins / 60).toFixed(1) : mins / 60) + "h";
+    time = `${fmtTime(s)}<small>${mins ? dur : ""}</small>`;
+  }
+  const c = colors[e.sources[0]] || "var(--muted)";
+  const dots = e.sources.map((n) => `<span class="dot" title="${esc(n)}" style="background:${esc(colors[n] || "var(--muted)")}"></span>`).join("");
+  const link = e.link && /^https?:\/\//i.test(e.link) ? `<a class="join" href="${esc(e.link)}" target="_blank" rel="noopener">Join</a>` : "";
+  const loc = e.location && e.location !== e.link ? `<span class="loc">${esc(e.location)}</span>` : "";
+  const desc = e.description ? `<details class="desc"><summary>Details</summary><div>${esc(e.description)}</div></details>` : "";
+  return `<div class="ev ${cx ? "cx" : ""} ${isNow ? "now" : ""} ${past ? "past" : ""}" style="--c:${esc(c)}">
+    <div class="time">${time}</div>
+    <div class="body">
+      <div class="t">${esc(e.title)}</div>
+      <div class="meta">${isNow ? '<span class="chip nowc">NOW</span>' : ""}${cx ? '<span class="chip cx">Cancelled</span>' : ""}${link}${loc}<span class="dots">${dots}</span></div>
+      ${desc}
+    </div>
+  </div>`;
+}
+
+// ---------- settings + events
+function openSettings() {
+  $("settings").hidden = false;
+  $("api").value = cfg.api || DEFAULT_API;
+  $("token").value = cfg.token || "";
+}
+$("gearBtn").onclick = () => ($("settings").hidden ? openSettings() : ($("settings").hidden = true));
+$("saveBtn").onclick = () => {
+  cfg = { api: $("api").value.trim() || DEFAULT_API, token: $("token").value.trim() };
+  save("mycal.cfg", cfg);
+  $("settings").hidden = true;
+  data = null; save("mycal.cache", null);
+  render();
+  fetchAll(false);
+};
+$("copyFeed").onclick = async () => {
+  try { await navigator.clipboard.writeText($("feedUrl").value); $("copyFeed").textContent = "Copied"; } catch { $("feedUrl").select(); }
+  setTimeout(() => ($("copyFeed").textContent = "Copy"), 1500);
+};
+$("refreshBtn").onclick = () => fetchAll(true);
+$("tabs").onclick = (ev) => { const r = ev.target.dataset?.r; if (r) { prefs.range = r; save("mycal.prefs", prefs); render(); } };
+$("srcs").onclick = (ev) => {
+  const b = ev.target.closest(".src"); if (!b) return;
+  const n = b.dataset.s;
+  prefs.hidden = prefs.hidden.includes(n) ? prefs.hidden.filter((x) => x !== n) : [...prefs.hidden, n];
+  save("mycal.prefs", prefs); render();
+};
+$("showCx").onchange = (ev) => { prefs.showCx = ev.target.checked; save("mycal.prefs", prefs); render(); };
+
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") fetchAll(false); });
+window.addEventListener("online", () => fetchAll(false));
+setInterval(() => { if (document.visibilityState === "visible") fetchAll(false); }, 120000);
+setInterval(() => { if (document.visibilityState === "visible") render(); }, 30000);
+
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
+render();
+fetchAll(false);
+</script>
+</body>
+</html>
