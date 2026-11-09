@@ -161,6 +161,11 @@
       <div class="feed"><input type="text" id="feedUrl" readonly><button class="gear" id="copyFeed">Copy</button></div>
       <div class="small">Apple Calendar lets you set this to refresh every 5 minutes. Google and Outlook only re-read subscribed calendars every few hours, so use this app when you need it to be current.</div>
     </div>
+    <div id="inboundBox" hidden>
+      <label class="f">Mail forwarding target (CloudMailin)</label>
+      <div class="feed"><input type="text" id="inboundUrl" readonly><button class="gear" id="copyInbound">Copy</button></div>
+      <div class="small">Paste this as the CloudMailin target URL (Raw format). Keep it private: anything posted to it is read as your mail.</div>
+    </div>
     <div id="pushBox">
       <label class="f">Notifications</label>
       <div class="small" id="pushState">Meetings 10 min before, recycling and birthdays at 7 PM the night before, and cancelled or moved meetings.</div>
@@ -348,6 +353,10 @@ function renderStatus(sources, now) {
     return `<div><span class="dot" style="background:${esc(s.color)}"></span> <b>${esc(s.name)}</b> — ${esc(state)}${s.kind === "email" && s.storedInvites != null ? ` (${s.storedInvites} invites tracked${s.emailEvents ? `, ${s.emailEvents} events read from email` : ""})` : ""}</div>`;
   }).join("") + (data.status?.generatedAt ? `<div>Server merged ${ago(data.status.generatedAt)}.</div>` : "");
 
+  if (data.status?.inboundPath) {
+    $("inboundBox").hidden = false;
+    $("inboundUrl").value = apiBase() + "/" + data.status.inboundPath;
+  }
   if (data.status?.feedPath) {
     $("feedBox").hidden = false;
     $("feedUrl").value = apiBase().replace(/^https?:/, "webcal:") + "/" + data.status.feedPath;
@@ -683,6 +692,10 @@ $("saveBtn").onclick = () => {
 $("copyFeed").onclick = async () => {
   try { await navigator.clipboard.writeText($("feedUrl").value); $("copyFeed").textContent = "Copied"; } catch { $("feedUrl").select(); }
   setTimeout(() => ($("copyFeed").textContent = "Copy"), 1500);
+};
+$("copyInbound").onclick = async () => {
+  try { await navigator.clipboard.writeText($("inboundUrl").value); $("copyInbound").textContent = "Copied"; } catch { $("inboundUrl").select(); }
+  setTimeout(() => ($("copyInbound").textContent = "Copy"), 1500);
 };
 $("refreshBtn").onclick = () => fetchAll(true);
 $("tabs").onclick = (ev) => { const r = ev.target.dataset?.r; if (r) { prefs.range = r; save("mycal.prefs", prefs); render(); } };
