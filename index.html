@@ -74,6 +74,17 @@
   .feed{display:flex;gap:6px;margin-top:4px}
   .feed input{font-size:12px}
   .small{font-size:12px;color:var(--muted);margin-top:6px;line-height:1.5}
+  .games{margin:2px 0 8px;font-size:13px;color:var(--muted)}
+  .games summary{cursor:pointer;list-style:none;padding:4px 2px}
+  .games summary::-webkit-details-marker{display:none}
+  .games summary::after{content:" ▸";font-size:11px}
+  .games[open] summary::after{content:" ▾"}
+  .g{display:flex;gap:10px;align-items:baseline;padding:3px 2px;white-space:nowrap;overflow:hidden}
+  .g .gt{width:68px;flex:none;font-variant-numeric:tabular-nums}
+  .g .gm{overflow:hidden;text-overflow:ellipsis;color:var(--text);opacity:.8}
+  .g .gw{flex:none;font-size:11.5px;opacity:.8}
+  .g.live .gt{color:var(--accent);font-weight:700}
+  .g.done{opacity:.45}
   details.desc{margin-top:6px;font-size:12.5px;color:var(--muted)}
   details.desc summary{cursor:pointer}
   details.desc div{white-space:pre-wrap;overflow-wrap:anywhere;margin-top:4px;max-height:220px;overflow:auto}
@@ -241,13 +252,16 @@ function render() {
   if (!groups.has(todayKey) && prefs.range !== "all") html += `<div class="day today">${esc(dayLabel(todayKey))}</div><div class="empty">Nothing else today.</div>`;
   for (const key of [...groups.keys()].sort()) {
     html += `<div class="day ${key === todayKey ? "today" : ""}">${esc(dayLabel(key))}</div>`;
-    for (const e of groups.get(key)) html += card(e, now, colors);
+    const dayEvents = groups.get(key).filter((e) => e.category !== "game");
+    const dayGames = groups.get(key).filter((e) => e.category === "game");
+    for (const e of dayEvents) html += card(e, now, colors);
+    if (dayGames.length) html += gamesBlock(dayGames, now);
   }
   if (!visible.length && prefs.range === "all") html = `<div class="empty">No upcoming events.</div>`;
   $("list").innerHTML = html;
 
   const stale = sources.some((s) => (s.kind === "email" ? s.configured && !s.ok : !s.ok));
-  const next = data.events.find((e) => e.status !== "cancelled" && !e.allDay && startOf(e) > now && !e.sources.every((s) => prefs.hidden.includes(s)));
+  const next = data.events.find((e) => e.status !== "cancelled" && !e.allDay && e.category !== "game" && startOf(e) > now && !e.sources.every((s) => prefs.hidden.includes(s)));
   $("sub").className = "sub" + (stale ? " stale" : "");
   $("sub").textContent = `Updated ${ago(data.fetchedAt)}` + (stale ? " · a calendar isn't syncing" : "") + (next ? ` · next: ${next.title} at ${fmtTime(startOf(next))}` : "");
 
@@ -262,6 +276,23 @@ function render() {
     $("feedBox").hidden = false;
     $("feedUrl").value = apiBase().replace(/^https?:/, "webcal:") + "/" + data.status.feedPath;
   }
+}
+
+// Games stay out of the way: slim muted lines after the day's events,
+// folded into one line when there are three or more.
+function gamesBlock(games, now) {
+  const rows = games.map((e) => {
+    const s = startOf(e), en = endOf(e);
+    const live = s <= now && en > now;
+    const where = String(e.location || "").replace(/^▶\s*/, "").split(" · ")[0];
+    return `<div class="g ${live ? "live" : ""} ${en <= now ? "done" : ""}"><span class="gt">${live ? "LIVE" : fmtTime(s)}</span><span class="gm">${esc(e.title)}</span><span class="gw">${esc(where)}</span></div>`;
+  }).join("");
+  if (games.length < 3) return `<div class="games">${rows}</div>`;
+  const icons = [...new Set(games.map((e) => [...e.title][0]))].join("");
+  const live = games.some((e) => startOf(e) <= now && endOf(e) > now);
+  const first = games.find((e) => endOf(e) > now) || games[0];
+  const label = `${icons} ${games.length} games you can watch · ${live ? "one is on now" : "from " + fmtTime(startOf(first))}`;
+  return `<details class="games"><summary>${esc(label)}</summary>${rows}</details>`;
 }
 
 function card(e, now, colors) {
