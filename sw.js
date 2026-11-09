@@ -1,6 +1,6 @@
 // App shell cached for offline. Calendar data comes from the server (another
 // origin) and is never cached here; the app keeps its own last copy.
-const CACHE = "my-calendar-v2";
+const CACHE = "my-calendar-v3";
 const SHELL = ["./", "index.html", "manifest.webmanifest", "icon-192.png", "icon-512.png", "apple-touch-icon.png"];
 
 self.addEventListener("install", (e) => {

@@ -211,7 +211,7 @@ function render() {
   const sources = data.status?.sources || [];
   $("srcs").innerHTML = sources.map((s) => {
     const off = prefs.hidden.includes(s.name);
-    const bad = s.kind === "feed" ? !s.ok : s.configured && !s.ok;
+    const bad = s.kind === "email" ? s.configured && !s.ok : !s.ok;
     const title = bad ? (s.lastError || "Not synced yet") : "Synced " + ago(s.lastOk);
     return `<button class="src ${off ? "off" : ""}" data-s="${esc(s.name)}" title="${esc(title)}"><span class="dot" style="background:${esc(s.color)}"></span>${esc(s.name)}${bad ? ' <span class="warn">⚠</span>' : ""}</button>`;
   }).join("");
@@ -246,7 +246,7 @@ function render() {
   if (!visible.length && prefs.range === "all") html = `<div class="empty">No upcoming events.</div>`;
   $("list").innerHTML = html;
 
-  const stale = sources.some((s) => (s.kind === "feed" ? !s.ok : s.configured && !s.ok));
+  const stale = sources.some((s) => (s.kind === "email" ? s.configured && !s.ok : !s.ok));
   const next = data.events.find((e) => e.status !== "cancelled" && !e.allDay && startOf(e) > now && !e.sources.every((s) => prefs.hidden.includes(s)));
   $("sub").className = "sub" + (stale ? " stale" : "");
   $("sub").textContent = `Updated ${ago(data.fetchedAt)}` + (stale ? " · a calendar isn't syncing" : "") + (next ? ` · next: ${next.title} at ${fmtTime(startOf(next))}` : "");
