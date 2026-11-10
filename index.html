@@ -65,6 +65,8 @@
   .chip{background:var(--chip);border-radius:6px;padding:2px 7px;font-size:12px;color:var(--muted)}
   .chip.cx{background:color-mix(in srgb,var(--accent) 18%,transparent);color:var(--accent);font-weight:700}
   .chip.nowc{background:var(--accent);color:#fff;font-weight:700}
+  a.dir{background:color-mix(in srgb,#3b82f6 18%,transparent);color:#3b82f6;font-weight:700;border-radius:6px;padding:2px 8px;font-size:13px;text-decoration:none;white-space:nowrap}
+  a.loc{color:inherit;text-decoration:underline;text-decoration-color:color-mix(in srgb,currentColor 35%,transparent)}
   a.join{background:color-mix(in srgb,var(--ok) 18%,transparent);color:var(--ok);font-weight:700;border-radius:6px;padding:2px 8px;font-size:12px;text-decoration:none}
   .dots{display:inline-flex;gap:3px}
   .empty{color:var(--muted);text-align:center;padding:30px 10px}
@@ -568,13 +570,16 @@ function card(e, now, colors) {
   const c = colors[e.sources[0]] || "var(--muted)";
   const dots = e.sources.map((n) => `<span class="dot" title="${esc(n)}" style="background:${esc(colors[n] || "var(--muted)")}"></span>`).join("");
   const link = e.link && /^https?:\/\//i.test(e.link) ? `<a class="join" href="${esc(e.link)}" target="_blank" rel="noopener">Join</a>` : "";
-  const loc = e.location && e.location !== e.link ? `<span class="loc">${esc(e.location)}</span>` : "";
+  const place = placeOf(e.location);
+  const dir = place ? `<a class="dir" href="${esc(directionsUrl(place))}" target="_blank" rel="noopener">📍 Directions</a>` : "";
+  const loc = place ? `<a class="loc" href="${esc(directionsUrl(place))}" target="_blank" rel="noopener">${esc(e.location)}</a>`
+    : e.location && e.location !== e.link ? `<span class="loc">${esc(e.location)}</span>` : "";
   const desc = e.description ? `<details class="desc"><summary>Details</summary><div>${esc(e.description)}</div></details>` : "";
   return `<div class="ev ${cx ? "cx" : ""} ${isNow ? "now" : ""} ${past ? "past" : ""}" style="--c:${esc(c)}">
     <div class="time">${time}</div>
     <div class="body">
       <div class="t">${esc(e.title)}</div>
-      <div class="meta">${isNow ? '<span class="chip nowc">NOW</span>' : ""}${cx ? '<span class="chip cx">Cancelled</span>' : ""}${e.category === "mail" ? `<span class="chip mail">📧 from email</span><button class="rm" data-rm="${esc(e.mailId)}" title="Wrong or not needed? Remove just this one.">Ignore</button>${e.mailSender ? `<button class="rm" data-ignore-sender="${esc(e.mailId)}" title="Remove every event from ${esc(e.mailSender)} and skip their future emails. Undo in Settings.">Ignore all from ${esc(senderLabel(e.mailSender))}</button>` : ""}` : ""}${link}${loc}<span class="dots">${dots}</span></div>
+      <div class="meta">${isNow ? '<span class="chip nowc">NOW</span>' : ""}${cx ? '<span class="chip cx">Cancelled</span>' : ""}${e.category === "mail" ? `<span class="chip mail">📧 from email</span><button class="rm" data-rm="${esc(e.mailId)}" title="Wrong or not needed? Remove just this one.">Ignore</button>${e.mailSender ? `<button class="rm" data-ignore-sender="${esc(e.mailId)}" title="Remove every event from ${esc(e.mailSender)} and skip their future emails. Undo in Settings.">Ignore all from ${esc(senderLabel(e.mailSender))}</button>` : ""}` : ""}${link}${dir}${loc}<span class="dots">${dots}</span></div>
       ${desc}
     </div>
   </div>`;
@@ -668,6 +673,17 @@ async function syncPush() {
 // Events read from email: ignore one (wrong, or not needed), or ignore
 // everything from that sender, now and in future emails.
 // "Run Raleigh PT via janeapp.com" -> "Run Raleigh PT"
+// The part of a location you could drive to (not "Microsoft Teams Meeting",
+// not a bare room name), and a link that opens turn-by-turn directions to it.
+function placeOf(location) {
+  const parts = String(location || "").split(/\s*;\s*/).filter((p) =>
+    p && !/https?:\/\/|\b(?:microsoft teams|teams meeting|zoom|google meet|webex|online|virtual|phone call)\b/i.test(p));
+  return parts.find((p) => /\d/.test(p) && /[a-z]{3}/i.test(p)) || "";
+}
+function directionsUrl(place) {
+  const q = encodeURIComponent(place);
+  return /iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent) ? `https://maps.apple.com/?daddr=${q}` : `https://www.google.com/maps/dir/?api=1&destination=${q}`;
+}
 function senderLabel(s) { return String(s).replace(/ via \S+$/, ""); }
 document.addEventListener("click", async (ev) => {
   const b = ev.target.closest("button[data-rm],button[data-ignore-sender]");
