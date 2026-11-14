@@ -548,7 +548,7 @@ function gamesBlock(games, now) {
   const icons = [...new Set(games.map((e) => [...e.title][0]))].join("");
   const live = games.some((e) => startOf(e) <= now && endOf(e) > now);
   const first = games.find((e) => endOf(e) > now) || games[0];
-  const label = `${icons} ${games.length} games you can watch · ${live ? "one is on now" : "from " + fmtTime(startOf(first))}`;
+  const label = `${icons} ${games.length} to watch · ${live ? "one is on now" : "from " + fmtTime(startOf(first))}`;
   return `<details class="games"><summary>${esc(label)}</summary>${rows}</details>`;
 }
 
